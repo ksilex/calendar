@@ -1,0 +1,23 @@
+default: &default
+  username: calendar
+  password: <%= Rails.application.credentials.dig(:db_pass) %>
+  host: localhost
+  adapter: postgresql
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  encoding: unicode
+  timeout: 5000
+
+development:
+  <<: *default
+  database: calendar_dev
+
+# Warning: The database defined as "test" will be erased and
+# re-generated from your development database when you run "rake".
+# Do not set this db to the same as development or production.
+test:
+  <<: *default
+  database: calendar_test
+
+production:
+  <<: *default
+  database: calendar_prod
