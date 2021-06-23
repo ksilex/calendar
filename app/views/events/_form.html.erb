@@ -1,0 +1,6 @@
+<%= form_with model: event, local: false do |f| %>
+  <%= f.text_field :title, placeholder: true %>
+  <%= f.datetime_field :start %>
+  <%= f.datetime_field :end %>
+  <%= f.submit "Create" %>
+<% end %>
