@@ -5,14 +5,32 @@ class EventsController < ApplicationController
   def index
     @events = current_user.events.where(start: params[:start]..params[:end])
     respond_to do |format|
-      format.json { render json: @events }
+      format.json { render json: event_serialize(@events).target! }
       format.html
+    end
+  end
+
+  def all
+    @events = Event.where(start: params[:start]..params[:end]).includes(:user)
+    respond_to do |format|
+      format.json { render json: event_serialize(@events).target! }
     end
   end
 
   def create
     @event = current_user.events.new(event_params)
-    @event.save
+    if @event.save
+      render json: {
+        id: @event.id,
+        title: "#{@event.user.name}: #{@event.title}",
+        start: @event.start,
+        end: @event.end
+      }
+    end
+  end
+
+  def update
+    event.update(event_params)
   end
 
   def event
@@ -20,6 +38,18 @@ class EventsController < ApplicationController
   end
 
   private
+
+  def event_serialize(events)
+    Jbuilder.new do |obj|
+      obj.array!(events) do |event|
+        obj.id event.id
+        obj.editable event.user_id == current_user.id ? true : false
+        obj.title "#{event.user.name}: #{event.title}"
+        obj.start event.start
+        obj.end event.end
+      end
+    end
+  end
 
   def event_params
     params.require(:event).permit(:title, :start, :end)

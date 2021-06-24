@@ -7,18 +7,39 @@ const dayjs = require('dayjs');
 
 document.addEventListener('DOMContentLoaded', function () {
   var calendarEl = document.getElementById('calendar')
+  if (!calendarEl) return
+  document.body.addEventListener("ajax:success", (e) => {
+    var event = e.detail[0]
+    calendar.addEvent(event)
+  })
 
   var calendar = new Calendar(calendarEl, {
+    customButtons: {
+      viewAllEvents: {
+        text: 'All events',
+        click: function() {
+          calendar.getEventSources()[0].remove()
+          calendar.addEventSource('/events/all.json')
+        }
+      },
+      viewMyEvents: {
+        text: 'My events',
+        click: function() {
+          calendar.getEventSources()[0].remove()
+          calendar.addEventSource('/events.json')
+        }
+      }
+    },
     plugins: [ dayGridPlugin, interactionPlugin, timeGridPlugin, listPlugin ],
     initialView: 'dayGridMonth',
     aspectRatio: 2.5,
     selectable: true,
+    editable: true,
     longPressDelay: 0,
     events: '/events.json',
-    nextDayThreshold: '06sss:00:00',
-
+    nextDayThreshold: '06:00:00',
     headerToolbar: {
-      left: 'prev,next today',
+      left: 'prev,next viewAllEvents viewMyEvents',
       center: 'title',
       right: 'dayGridMonth,timeGridWeek,listWeek'
     },
@@ -29,7 +50,19 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("event_end").value = dayjs(info.endStr).format('YYYY-MM-DDTHH:mm')
       })
       calendar.unselect()
-    }
+    },
+    eventDrop: function(info) {
+      var event_data = {
+        event: {
+          start: info.event.startStr,
+          end: info.event.endStr
+        }
+      }
+      var xhr = new XMLHttpRequest()
+      xhr.open('PATCH', `events/${info.event.id}`)
+      xhr.setRequestHeader("Content-Type", "application/json")
+      xhr.send(JSON.stringify(event_data))
+    },
   })
   calendar.render()
 })
