@@ -10,7 +10,9 @@ document.addEventListener('DOMContentLoaded', function () {
   if (!calendarEl) return
   document.body.addEventListener("ajax:success", (e) => {
     var event = e.detail[0]
+    if(event.updated) { calendar.getEventById(event.id).remove() }
     calendar.addEvent(event)
+    window.myModal.hide()
   })
 
   var calendar = new Calendar(calendarEl, {
@@ -32,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function () {
     },
     plugins: [ dayGridPlugin, interactionPlugin, timeGridPlugin, listPlugin ],
     initialView: 'dayGridMonth',
-    aspectRatio: 2.5,
+    aspectRatio: 3.2,
     selectable: true,
     editable: true,
     longPressDelay: 0,
@@ -41,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function () {
     headerToolbar: {
       left: 'prev,next viewAllEvents viewMyEvents',
       center: 'title',
-      right: 'dayGridMonth,timeGridWeek,listWeek'
+      right: 'dayGridMonth,listWeek'
     },
 
     select: function(info) {
@@ -50,6 +52,9 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById("event_end").value = dayjs(info.endStr).format('YYYY-MM-DDTHH:mm')
       })
       calendar.unselect()
+    },
+    eventClick: function(info) {
+      getScript(`events/${info.event.id}/edit`)
     },
     eventDrop: function(info) {
       var event_data = {

@@ -20,17 +20,14 @@ class EventsController < ApplicationController
   def create
     @event = current_user.events.new(event_params)
     if @event.save
-      render json: {
-        id: @event.id,
-        title: "#{@event.user.name}: #{@event.title}",
-        start: @event.start,
-        end: @event.end
-      }
+      success_response(@event)
     end
   end
 
   def update
-    event.update(event_params)
+    if event.update(event_params)
+      success_response(event, true)
+    end
   end
 
   def event
@@ -39,12 +36,22 @@ class EventsController < ApplicationController
 
   private
 
+  def success_response(event, updated = nil)
+    render json: {
+      updated: updated,
+      id: event.id,
+      title: event.title,
+      start: event.start,
+      end: event.end
+    }
+  end
+
   def event_serialize(events)
     Jbuilder.new do |obj|
       obj.array!(events) do |event|
         obj.id event.id
         obj.editable event.user_id == current_user.id ? true : false
-        obj.title "#{event.user.name}: #{event.title}"
+        obj.title event.title
         obj.start event.start
         obj.end event.end
       end

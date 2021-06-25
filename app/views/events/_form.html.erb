@@ -1,6 +1,17 @@
 <%= form_with model: event, local: false do |f| %>
-  <%= f.text_field :title, placeholder: true %>
-  <%= f.datetime_field :start %>
-  <%= f.datetime_field :end %>
-  <%= f.submit "Create" %>
+  <div class="mb-3">
+    <%= f.label :title, class: 'form-label' %>
+    <%= f.text_field :title, placeholder: true, class: 'form-control' %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :start, class: 'form-label' %>
+    <%= f.datetime_field :start, class: 'form-control' %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :end, class: 'form-label' %>
+    <%= f.datetime_field :end, class: 'form-control' %>
+  </div>
+  <%if event.user_id == current_user.id %>
+  <%= f.submit class: 'btn btn-primary' %>
+  <%end%>
 <% end %>
