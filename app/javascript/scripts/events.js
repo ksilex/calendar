@@ -3,6 +3,7 @@ import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import listPlugin from '@fullcalendar/list'
 import interactionPlugin from '@fullcalendar/interaction'
+import rrulePlugin from '@fullcalendar/rrule'
 const dayjs = require('dayjs');
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -10,11 +11,24 @@ document.addEventListener('DOMContentLoaded', function () {
   if (!calendarEl) return
   document.body.addEventListener("ajax:success", (e) => {
     var event = e.detail[0]
-    if(event.updated) { calendar.getEventById(event.id).remove() }
-    calendar.addEvent(event)
-    window.myModal.hide()
-  })
+    if (typeof event !== 'object') return
 
+    if (event.state) calendar.getEventById(event.id).remove()
+    if (event.state == 'updated' || event.state == null) calendar.addEvent(event)
+    window.myModal.hide()
+    console.log(event.state)
+  })
+  document.body.addEventListener('ajax:error', (e) => {
+    var event = e.detail[0]
+    var errors = event.errors
+    errors.forEach(function(err){
+      document.getElementsByClassName('modal-body')[0].insertAdjacentHTML('afterbegin', `
+      <div class="alert alert-danger alert-dismissible fade show">
+        ${err}
+        <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"></button>
+      </div>`)
+    })
+  })
   var calendar = new Calendar(calendarEl, {
     customButtons: {
       viewAllEvents: {
@@ -32,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       }
     },
-    plugins: [ dayGridPlugin, interactionPlugin, timeGridPlugin, listPlugin ],
+    plugins: [ dayGridPlugin, rrulePlugin, interactionPlugin, timeGridPlugin, listPlugin ],
     initialView: 'dayGridMonth',
     aspectRatio: 3.2,
     selectable: true,

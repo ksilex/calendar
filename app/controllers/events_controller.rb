@@ -1,9 +1,10 @@
 class EventsController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :authenticate_user!
+  before_action :author_actions, only: %i[update destroy]
 
   def index
-    @events = current_user.events.where(start: params[:start]..params[:end])
+    @events = current_user.events
     respond_to do |format|
       format.json { render json: event_serialize(@events).target! }
       format.html
@@ -21,12 +22,24 @@ class EventsController < ApplicationController
     @event = current_user.events.new(event_params)
     if @event.save
       success_response(@event)
+    else
+      render json: { errors: event.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def update
     if event.update(event_params)
-      success_response(event, true)
+      success_response(event, 'updated')
+    else
+      render json: { errors: event.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    if event.destroy
+      success_response(event, 'deleted')
+    else
+      render json: { errors: event.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -36,9 +49,17 @@ class EventsController < ApplicationController
 
   private
 
-  def success_response(event, updated = nil)
+  helper_method :event
+
+  def author_actions
+    unless current_user.author?(event)
+      redirect_to root_path, notice: "You don't have rights to perform this action"
+    end
+  end
+
+  def success_response(event, state = nil)
     render json: {
-      updated: updated,
+      state: state,
       id: event.id,
       title: event.title,
       start: event.start,
@@ -50,7 +71,7 @@ class EventsController < ApplicationController
     Jbuilder.new do |obj|
       obj.array!(events) do |event|
         obj.id event.id
-        obj.editable event.user_id == current_user.id ? true : false
+        obj.editable current_user.author?(event)
         obj.title event.title
         obj.start event.start
         obj.end event.end
@@ -62,5 +83,4 @@ class EventsController < ApplicationController
     params.require(:event).permit(:title, :start, :end)
   end
 
-  helper_method :event
 end
