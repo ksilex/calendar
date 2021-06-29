@@ -14,9 +14,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof event !== 'object') return
 
     if (event.state) calendar.getEventById(event.id).remove()
-    if (event.state == 'updated' || event.state == null) calendar.addEvent(event)
+    if (event.state == 'updated' || event.state == null) calendar.addEvent(event, event.source)
     window.myModal.hide()
-    console.log(event.state)
   })
   document.body.addEventListener('ajax:error', (e) => {
     var event = e.detail[0]
@@ -34,30 +33,37 @@ document.addEventListener('DOMContentLoaded', function () {
       viewAllEvents: {
         text: 'All events',
         click: function() {
-          calendar.getEventSources()[0].remove()
-          calendar.addEventSource('/events/all.json')
+          calendar.getEventSources().forEach(function(el){
+            el.remove()
+          })
+          calendar.addEventSource({ id: 'event', url: '/events/all.json'})
+          calendar.addEventSource({id: 'recurring_event', url:'/recurring_events/all.json'})
         }
       },
       viewMyEvents: {
         text: 'My events',
         click: function() {
-          calendar.getEventSources()[0].remove()
-          calendar.addEventSource('/events.json')
+          calendar.getEventSources().forEach(function(el){
+            el.remove()
+          })
+          calendar.addEventSource({id: 'event', url: '/events.json'})
+          calendar.addEventSource({id: 'recurring_event', url:'/recurring_events.json'})
         }
       }
     },
     plugins: [ dayGridPlugin, rrulePlugin, interactionPlugin, timeGridPlugin, listPlugin ],
+    timeZone: 'UTC',
     initialView: 'dayGridMonth',
     aspectRatio: 3.2,
     selectable: true,
     editable: true,
     longPressDelay: 0,
-    events: '/events.json',
+    eventSources: [{ id: 'event', url: '/events.json'}, {id: 'recurring_event', url: '/recurring_events.json'}],
     nextDayThreshold: '06:00:00',
     headerToolbar: {
-      left: 'prev,next viewAllEvents viewMyEvents',
+      left: 'prev,next viewMyEvents',
       center: 'title',
-      right: 'dayGridMonth,listWeek'
+      right: 'viewAllEvents dayGridMonth,listWeek'
     },
 
     select: function(info) {
@@ -68,7 +74,11 @@ document.addEventListener('DOMContentLoaded', function () {
       calendar.unselect()
     },
     eventClick: function(info) {
-      getScript(`events/${info.event.id}/edit`)
+      if (info.event.extendedProps.recurring) {
+        getScript(`recurring_events/${info.event.id}/edit`)
+      } else {
+        getScript(`events/${info.event.id}/edit`)
+      }
     },
     eventDrop: function(info) {
       var event_data = {

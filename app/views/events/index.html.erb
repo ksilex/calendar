@@ -12,4 +12,5 @@
     </div>
   </div>
 </div>
-<%= button_to "Add Event", new_event_path, method: :get, class: 'btn btn-primary mt-2', remote: true %>
+<%= link_to "Add Event", new_event_path, class: 'btn btn-primary mt-2', remote: true %>
+<%= link_to "Add Recurring Event", new_recurring_event_path, class: 'btn btn-primary mt-2', remote: true %>

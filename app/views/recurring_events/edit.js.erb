@@ -1,0 +1,4 @@
+window.myModal = (typeof window.myModal === 'undefined') ? new bootstrap.Modal(document.getElementById('newEvent')) : window.myModal
+document.getElementById('newEventLabel').innerHTML = "<%= event.user.conditional_name %>'s Recurring Event"
+document.getElementsByClassName('modal-body')[0].innerHTML = '<%= j render "form", action: "/recurring_events/#{event.id}" %>'
+window.myModal.show()

@@ -1,0 +1,8 @@
+<% resource&.errors&.full_messages&.each do |error| %>
+  <%= content_tag :div,
+                  class: "alert alert-danger alert-dismissible fade show",
+                  data: {resource_id: resource.id} do %>
+    <%= error %>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  <% end %>
+<% end %>

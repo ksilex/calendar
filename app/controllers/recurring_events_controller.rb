@@ -1,25 +1,24 @@
-class EventsController < ApplicationController
+class RecurringEventsController < ApplicationController
   skip_before_action :verify_authenticity_token
   before_action :authenticate_user!
   before_action :author_actions, only: %i[update destroy]
 
   def index
-    @events = current_user.events.where(start: params[:start]..params[:end], frequency: nil)
+    @events = current_user.events.where('events.end > ?', params[:start]).where.not(frequency: nil)
     respond_to do |format|
       format.json { render json: event_serialize(@events).target! }
-      format.html
     end
   end
 
   def all
-    @events = Event.where(start: params[:start]..params[:end], frequency: nil).includes(:user)
+    @events = Event.where('events.end > ?', params[:start]).where.not(frequency: nil).includes(:user)
     respond_to do |format|
       format.json { render json: event_serialize(@events).target! }
     end
   end
 
   def create
-    @event = current_user.events.new(event_params)
+    @event = current_user.events.new(recurring_event_params)
     if @event.save
       success_response(@event)
     else
@@ -28,7 +27,7 @@ class EventsController < ApplicationController
   end
 
   def update
-    if event.update(event_params)
+    if event.update(recurring_event_params)
       success_response(event, 'updated')
     else
       render json: { errors: event.errors.full_messages }, status: :unprocessable_entity
@@ -61,11 +60,16 @@ class EventsController < ApplicationController
     render json: {
       state: state,
       id: event.id,
+      groupId: event.id,
       title: event.title,
-      start: event.start,
-      end: event.end,
-      source: 'event',
-      color: '#ff00bf'
+      source: 'recurring_event',
+      recurring: true,
+      color: '#ff00bf',
+      rrule: {
+        freq: event.frequency,
+        dtstart: event.start,
+        until: event.end
+      }
     }
   end
 
@@ -73,16 +77,21 @@ class EventsController < ApplicationController
     Jbuilder.new do |obj|
       obj.array!(events) do |event|
         obj.id event.id
-        obj.editable current_user.author?(event)
+        obj.groupId event.id
+        obj.editable false
         obj.title event.title
-        obj.start event.start
-        obj.end event.end
+        obj.recurring true
         obj.color '#ff00bf' if current_user.author?(event)
+        obj.rrule do
+          obj.freq event.frequency
+          obj.dtstart event.start
+          obj.until event.end
+        end
       end
     end
   end
 
-  def event_params
-    params.require(:event).permit(:title, :start, :end)
+  def recurring_event_params
+    params.require(:recurring_event).permit(:title, :start, :end, :frequency)
   end
 end

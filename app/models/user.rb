@@ -4,8 +4,8 @@ class User < ApplicationRecord
   # :confirmable, :lockable, :timeoutable, :trackable and :omniauthable
   devise :database_authenticatable, :registerable, :validatable
 
-  def name
-    read_attribute(:name).blank? ? read_attribute(:name).capitalize : email.split('@')[0].capitalize
+  def conditional_name
+    !read_attribute(:name).blank? ? read_attribute(:name).capitalize : email.split('@')[0].capitalize
   end
 
   def author?(resource)

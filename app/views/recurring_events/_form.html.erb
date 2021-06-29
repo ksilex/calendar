@@ -1,0 +1,24 @@
+<%= form_with scope: :recurring_event, url: action, model: Event.find_by(id: params[:id]), local: false do |f| %>
+  <div class="mb-3">
+    <%= f.label :title, class: 'form-label' %>
+    <%= f.text_field :title, placeholder: true, class: 'form-control', required: true %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :start, class: 'form-label' %>
+    <%= f.datetime_field :start, class: 'form-control', required: true %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :end, class: 'form-label' %>
+    <%= f.datetime_field :end, class: 'form-control', required: true %>
+  </div>
+  <div class="mb-3">
+    <%= f.label :frequency, class: 'form-label' %>
+    <%= f.select :frequency, Event.frequencies.keys, {prompt: 'Select frequency'}, { class: 'form-select', required: true } %>
+  </div>
+  <%if current_user.author?(event) %>
+    <%= f.submit class: 'btn btn-primary' %>
+  <%end%>
+  <%if current_user.author?(event) && !event.new_record? %>
+    <%= link_to 'Delete', event, method: :delete, remote: true, class: 'btn btn-danger' %>
+  <%end%>
+<% end %>
