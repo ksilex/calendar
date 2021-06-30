@@ -4,14 +4,14 @@ class RecurringEventsController < ApplicationController
   before_action :author_actions, only: %i[update destroy]
 
   def index
-    @events = current_user.events.where('events.end > ?', params[:start]).where.not(frequency: nil)
+    @events = current_user.events.where('events.end > ?', params[:start]).where('events.start < ?', params[:end]).where.not(frequency: nil)
     respond_to do |format|
       format.json { render json: event_serialize(@events).target! }
     end
   end
 
   def all
-    @events = Event.where('events.end > ?', params[:start]).where.not(frequency: nil).includes(:user)
+    @events = Event.where('events.end > ?', params[:start]).where('events.start < ?', params[:end]).where.not(frequency: nil).includes(:user)
     respond_to do |format|
       format.json { render json: event_serialize(@events).target! }
     end
@@ -60,9 +60,9 @@ class RecurringEventsController < ApplicationController
     render json: {
       state: state,
       id: event.id,
-      groupId: event.id,
       title: event.title,
       source: 'recurring_event',
+      editable: false,
       recurring: true,
       color: '#ff00bf',
       rrule: {
@@ -77,7 +77,6 @@ class RecurringEventsController < ApplicationController
     Jbuilder.new do |obj|
       obj.array!(events) do |event|
         obj.id event.id
-        obj.groupId event.id
         obj.editable false
         obj.title event.title
         obj.recurring true
