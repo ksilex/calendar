@@ -1,24 +1,27 @@
-# README
+# Finest Calendar [Calendar Link](https://finestcalendar.herokuapp.com/ "Calendar Link")
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Библиотеки
+-----------
+* **FullCalendar**, Документация: https://fullcalendar.io/docs
 
-Things you may want to cover:
+* **Bootstrap**
 
-* Ruby version
+* **Devise**
 
-* System dependencies
+* **rspec-rails**
 
-* Configuration
+* **Shoulda Matchers**
 
-* Database creation
+* **factory_bot**
 
-* Database initialization
+Описание
+-----------
+* **Чужие события синего цвета, свои - фиолетовые**
+* **Диапазон неповторяющихся событий можно выбрать зажав ЛКМ на желаемом участке календаря**
+* **Диапазон неповторяющихся событий можно менять просто зажав и передвинув на желаемый участок календаря**
+* **Все события просматриваемы при клике на событие**
+* **При клике на собственные события отображается форма, в которой можно редактировать/удалить событие**
 
-* How to run the test suite
-
-* Services (job queues, cache servers, search engines, etc.)
-
-* Deployment instructions
-
-* ...
+Дополнительная функция
+-----------
+Удаление события
